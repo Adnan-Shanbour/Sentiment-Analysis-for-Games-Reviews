@@ -45,7 +45,7 @@ GAMES = [
 # We aim for ~350 per label = ~1050 total
 # Over-collect then trim to balance.
 REVIEWS_PER_APP = 350          # fetched per app per call
-MAX_TOTAL       = 3000         # safety cap before balancing
+MAX_TOTAL       = 5000         # safety cap before balancing
 
 def assign_label(rating: int) -> str:
     if rating <= 2:
@@ -82,7 +82,7 @@ def scrape_all_games() -> list[dict]:
                 all_rows.append({
                     "review_id":        f"REV{review_counter:05d}",
                     "source":           "Google Play Store",
-                    "product_category": f"Games – {category}",
+                    "product_category": f"Games - {category}",
                     "review_text":      text,
                     "rating":           rating,
                     "label":            assign_label(rating),
