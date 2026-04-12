@@ -26,7 +26,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
 
-# ─── Stopwords & Lemmatizer ───────────────────────────────────────────
+# Stopwords & Lemmatizer
 NEGATIONS = {
     "not", "no", "never", "nor", "neither", "nothing",
     "nobody", "nowhere", "hardly", "barely", "scarcely",
@@ -37,7 +37,7 @@ STOP_WORDS = set(stopwords.words("english")) - NEGATIONS
 lemmatizer = WordNetLemmatizer()
 
 
-# ─── Cleaning Functions ───────────────────────────────────────────────
+# Cleaning Functions
 def lowercase(text):
     return text.lower()
 
@@ -80,7 +80,7 @@ def lemmatize(tokens):
     return lemmas
 
 
-# ─── Full Pipeline ────────────────────────────────────────────────────
+# Full Pipeline
 def preprocess(text):
     """Run the full cleaning pipeline on a single review string.
 
