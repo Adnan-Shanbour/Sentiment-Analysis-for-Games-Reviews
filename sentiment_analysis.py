@@ -14,6 +14,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import numpy as np
+import pandas as pd
 
 from sklearn.model_selection         import train_test_split, GridSearchCV
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -183,6 +184,32 @@ def tune_model(factory, param_grid, X_train, X_test, y_train, y_test,
     result["best_params"] = grid.best_params_
     result["cv_score"]    = grid.best_score_
     return result
+
+
+def get_misclassified_examples(result, bundle, n=10):
+    """Return up to `n` misclassified test examples for a trained model."""
+    y_test = np.asarray(bundle["y_test"])
+    y_pred = np.asarray(result["y_pred"])
+    mis = np.where(y_test != y_pred)[0]
+    if len(mis) == 0:
+        return pd.DataFrame(), 0
+
+    df_all = bundle["df"].reset_index(drop=True)
+    test_pos = np.asarray(bundle["test_pos"])
+    le = bundle["le"]
+
+    rows = []
+    for i in mis[:n]:
+        row_idx = int(test_pos[i])
+        row = df_all.iloc[row_idx]
+        rows.append({
+            "Row": row_idx,
+            "Actual": le.inverse_transform([int(y_test[i])])[0],
+            "Predicted": le.inverse_transform([int(y_pred[i])])[0],
+            "Review": str(row.get("review_text", row.get("cleaned_text", ""))),
+        })
+
+    return pd.DataFrame(rows), len(mis)
 
 
 # Top features (linear models + TF-IDF)

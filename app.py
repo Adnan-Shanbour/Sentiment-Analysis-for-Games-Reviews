@@ -25,6 +25,7 @@ from preprocessing       import preprocess
 from sentiment_analysis  import (
     prepare_data, build_tfidf, build_word2vec,
     evaluate_model, tune_model, get_top_features, tokens_to_vector,
+    get_misclassified_examples,
 )
 
 
@@ -481,7 +482,7 @@ def style_confusion(cm, labels, ax, title):
         annot_kws={"fontsize": 10, "fontweight": "bold", "color": ann},
     )
 
-    # 🔥 Apply outline to all annotation texts
+    # Apply outline to all annotation texts
     for text in ax.texts:
         text.set_path_effects([
             path_effects.Stroke(linewidth=2, foreground='black'),
@@ -888,6 +889,26 @@ with tab_train:
                         r = mdata["result"]
                         st.markdown(f"**{name}**")
                         st.code(r["report_text"])
+
+                # Error analysis: show first 10 misclassified test examples
+                with st.expander("Error analysis (10 misclassified examples)"):
+                    bundle = st.session_state.data_bundle
+                    for name, mdata in models.items():
+                        r = mdata["result"]
+                        mis_df, total_mis = get_misclassified_examples(r, bundle, n=10)
+                        st.markdown(f"**{name}**")
+                        st.caption(
+                            f"Total misclassified: {total_mis:,} | "
+                            f"Showing {min(10, total_mis)}"
+                        )
+                        if mis_df.empty:
+                            st.success("No misclassified examples on the test split.")
+                        else:
+                            st.dataframe(
+                                mis_df,
+                                width="stretch",
+                                hide_index=True,
+                            )
 
                 # Top features (linear + TF-IDF only)
                 tfidf_linear = [
