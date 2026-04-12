@@ -5,6 +5,9 @@ Features
     1. Load reviews_dataset.csv
     2. Train feature/classifier combinations and display metrics
     3. Enter a new review and predict its sentiment
+
+Usage:
+    streamlit run app.py
 """
 
 import os
