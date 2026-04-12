@@ -7,20 +7,16 @@ Classifiers            : Logistic Regression · Linear SVM · Naive Bayes
 
 The notebook's side-effecting helpers (print / plt.show) have been refactored
 into pure functions that return structured results so they can be consumed by
-a GUI (see app.py).
+a GUI (app.py).
 """
 
 import warnings
 warnings.filterwarnings("ignore")
 
 import numpy as np
-import pandas as pd
 
 from sklearn.model_selection         import train_test_split, GridSearchCV
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model            import LogisticRegression
-from sklearn.svm                     import LinearSVC
-from sklearn.naive_bayes             import MultinomialNB, GaussianNB
 from sklearn.metrics                 import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, classification_report,
@@ -29,9 +25,8 @@ from sklearn.preprocessing           import LabelEncoder
 from gensim.models                   import Word2Vec
 
 
-# ═════════════════════════════════════════════════════════════════════
+
 # Data preparation
-# ═════════════════════════════════════════════════════════════════════
 def prepare_data(df, test_size=0.20, random_state=42):
     """Clean, label-encode and split the dataframe 80/20 (stratified).
 
@@ -78,9 +73,8 @@ def prepare_data(df, test_size=0.20, random_state=42):
     }
 
 
-# ═════════════════════════════════════════════════════════════════════
+
 # Feature representations
-# ═════════════════════════════════════════════════════════════════════
 def build_tfidf(X_train_text, X_test_text,
                 ngram_range=(1, 2), max_features=20_000,
                 sublinear_tf=True, min_df=2):
@@ -137,9 +131,7 @@ def tokens_to_vector(tokens, w2v_model, dim=100):
     return np.zeros(dim)
 
 
-# ═════════════════════════════════════════════════════════════════════
 # Training & evaluation
-# ═════════════════════════════════════════════════════════════════════
 def evaluate_model(model, X_train, X_test, y_train, y_test,
                    labels, model_name="Model"):
     """Fit `model` and return a dict of metrics + the trained estimator."""
@@ -193,9 +185,7 @@ def tune_model(factory, param_grid, X_train, X_test, y_train, y_test,
     return result
 
 
-# ═════════════════════════════════════════════════════════════════════
 # Top features (linear models + TF-IDF)
-# ═════════════════════════════════════════════════════════════════════
 def get_top_features(model, vectorizer, labels, top_n=15):
     """Return the top-N most positive / negative features per class.
 
