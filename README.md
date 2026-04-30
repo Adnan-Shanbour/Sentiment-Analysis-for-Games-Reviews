@@ -189,6 +189,49 @@ All tuning uses **5-fold stratified cross-validation** via `GridSearchCV`.
 
 ---
 
+## 🔍 Why Don't the Models Score Higher?
+
+63% F1-macro on a balanced 3-class problem is a meaningful result, but understanding the ceiling matters. The limitations come from several compounding factors — ranked by impact:
+
+---
+
+**1. 🎯 The neutral class is inherently ambiguous** *(biggest culprit)*
+
+Drawing the line between neutral and mildly positive/negative is subjective. A review like *"graphics are great but the ads ruin it"* is simultaneously positive and negative — wherever the labeller drew that boundary, another person would draw it differently. That inconsistency is baked into the ground truth, and no model can reliably learn a boundary that isn't consistently defined.
+
+---
+
+**2. 📉 888 training samples is genuinely small for a 3-class problem**
+
+TF-IDF produced 5,013 features against only 888 training rows — more features than samples. The models don't see enough examples to reliably learn which feature combinations distinguish each class, especially near the decision boundaries.
+
+---
+
+**3. 🧮 Word2Vec was trained from scratch on a tiny corpus**
+
+This explains almost entirely why Word2Vec underperforms TF-IDF so badly. Word2Vec needs millions of sentences to learn meaningful embeddings. Training it on 1,110 short reviews produces nearly random vectors — using pre-trained embeddings (GloVe, fastText) would have been a much fairer comparison and would likely close the gap significantly.
+
+---
+
+**4. 📝 Short review length contributes at the margins**
+
+Short texts create sparse TF-IDF vectors and unreliable Word2Vec averages, making individual predictions noisier. That said, TF-IDF still reached 63%, so the signal is present — length makes the problem harder but isn't the root cause.
+
+---
+
+**5. 🧠 Classical bag-of-words models can't capture context or sarcasm**
+
+*"Oh great, another pay-to-win update"* — a TF-IDF model sees `great` and leans positive. Without word order or contextual understanding, these cases are unrecoverable with classical ML. BERT and similar models handle this because they read the full sentence as a unit rather than a bag of independent tokens.
+
+---
+
+> **Highest-leverage improvements:**
+> - Use a pre-trained contextual model *(BERT notebook already included)* — addresses points 3, 4, and 5 at once
+> - Collect more labelled data, especially for the neutral class
+> - Consider collapsing to binary classification (positive vs. negative) — removing the ambiguous neutral class would likely push accuracy above 80%
+
+---
+
 ## 🖥️ Interactive App
 
 `app.py` is a Streamlit application with three tabs — load your data, train models, and predict in real time, all in the browser.
