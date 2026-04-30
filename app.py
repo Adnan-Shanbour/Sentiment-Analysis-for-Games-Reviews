@@ -512,7 +512,6 @@ st.markdown("# Sentiment Analysis Studio")
 st.markdown(
     "<div class='subtitle'>"
     "Load &nbsp;•&nbsp; Preprocess &nbsp;•&nbsp; Train &nbsp;•&nbsp; Predict "
-    "— all powered by your two notebooks."
     "</div>",
     unsafe_allow_html=True,
 )
@@ -663,7 +662,7 @@ with tab_data:
                     ax.text(
                         v, b.get_y() + b.get_height() / 2,
                         f" {v:,}", va="center", fontsize=9,
-                        color="#e8eaf6",
+                        color="#0d0d0d",
                     )
                 ax.spines["top"].set_visible(False)
                 ax.spines["right"].set_visible(False)
