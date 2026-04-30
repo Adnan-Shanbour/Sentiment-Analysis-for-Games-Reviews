@@ -1,126 +1,157 @@
-# Game Review Sentiment Analysis
+<div align="center">
 
-A complete NLP pipeline for three-class sentiment classification of mobile game reviews, built for **CSAI 452 – Natural Language Processing**. The project covers data collection, preprocessing, classical ML experimentation, and an interactive Streamlit demo app.
+# 🎮 Game Review Sentiment Analysis
 
----
+**Three-class NLP sentiment classification for mobile game reviews**
 
-## Table of Contents
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![NLTK](https://img.shields.io/badge/NLTK-NLP-green?style=flat-square)](https://www.nltk.org/)
+[![Course](https://img.shields.io/badge/CSAI%20452-Natural%20Language%20Processing-purple?style=flat-square)](.)
 
-- [Overview](#overview)
-- [Project Structure](#project-structure)
-- [Dataset](#dataset)
-- [Pipeline](#pipeline)
-  - [1. Preprocessing](#1-preprocessing)
-  - [2. Feature Extraction](#2-feature-extraction)
-  - [3. Models & Hyperparameter Tuning](#3-models--hyperparameter-tuning)
-- [Results](#results)
-- [Interactive App](#interactive-app)
-- [Installation](#installation)
-- [Usage](#usage)
+<br/>
+
+*From raw Play Store reviews to a fully interactive prediction app — end-to-end.*
+
+</div>
 
 ---
 
-## Overview
+## 📌 Overview
 
-Mobile game reviews are noisy, short, and emotionally expressive — making them a challenging benchmark for sentiment analysis. This project classifies reviews as **Positive**, **Negative**, or **Neutral** using a head-to-head comparison of six model configurations across two feature representations.
+Mobile game reviews are noisy, short, and emotionally charged — making them a compelling benchmark for sentiment analysis. This project builds a complete pipeline that classifies reviews as **Positive 🟢**, **Negative 🔴**, or **Neutral 🟡** using classical ML methods.
 
-**Key highlights:**
-- 8-stage text preprocessing pipeline with explicit negation preservation
-- Two feature representations: TF-IDF (sparse) vs. Word2Vec (dense)
+<div align="center">
+
+| 🗂️ 1,110 Reviews | ⚙️ 8-Stage Pipeline | 🤖 12 Model Configs | 🏆 63% F1-macro |
+|:---:|:---:|:---:|:---:|
+| Balanced 3-class dataset | End-to-end preprocessing | Baseline + tuned | Best: NB + TF-IDF |
+
+</div>
+
+**What's inside:**
+- Scraped, cleaned, and labelled Google Play Store reviews
+- 8-stage preprocessing pipeline with deliberate negation preservation
+- Two feature representations: **TF-IDF** (sparse) vs. **Word2Vec** (dense)
 - Three classifiers: Logistic Regression, Linear SVM, Naive Bayes
-- Baseline vs. GridSearchCV hyperparameter tuning for all combinations
-- Streamlit GUI for interactive training, evaluation, and live prediction
+- Baseline vs. GridSearchCV tuning across all combinations
+- Interactive **Streamlit app** for training, evaluation, and live prediction
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 project/
-├── app.py                          # Streamlit web application
-├── preprocessing.py                # Preprocessing module (importable)
-├── preprocessing.ipynb             # Preprocessing notebook with EDA
-├── sentiment_analysis.py           # Training & evaluation module (importable)
-├── sentiment_analysis.ipynb        # Experiment notebook (baseline + tuned)
-├── sentiment_analysis_with_bert.ipynb  # BERT-based extension
-├── scrape_playstore_reviews.py     # Google Play Store review scraper
-├── reviews_dataset.csv             # Raw dataset (1,110 reviews)
-└── reviews_preprocessed.csv       # Cleaned dataset (output of preprocessing)
+├── 🖥️  app.py                              # Streamlit web application
+│
+├── 📓  preprocessing.ipynb                 # Preprocessing notebook (step-by-step + EDA)
+├── 🐍  preprocessing.py                    # Preprocessing module (importable)
+│
+├── 📓  sentiment_analysis.ipynb            # Experiment notebook (baseline + tuned results)
+├── 🐍  sentiment_analysis.py               # Training & evaluation module (importable)
+│
+├── 📓  sentiment_analysis_with_bert.ipynb  # BERT-based extension
+├── 🐍  scrape_playstore_reviews.py         # Google Play Store scraper
+│
+├── 📊  reviews_dataset.csv                 # Raw dataset  (1,110 reviews)
+└── 📊  reviews_preprocessed.csv           # Cleaned dataset (pipeline output)
 ```
 
 ---
 
-## Dataset
+## 📊 Dataset
 
-| Property | Value |
-|---|---|
-| Source | Google Play Store (scraped) |
-| Total reviews | 1,110 |
-| Class distribution | 370 Positive / 370 Negative / 370 Neutral (perfectly balanced) |
-| Columns | `review_id`, `source`, `product_category`, `review_text`, `rating`, `label` |
-| Train / Test split | 80 / 20 stratified (888 train, 222 test) |
+<div align="center">
 
-The dataset was scraped from the Play Store using `scrape_playstore_reviews.py` and manually labelled to ensure a balanced three-class distribution.
+| Property | Details |
+|:---|:---|
+| **Source** | Google Play Store (scraped) |
+| **Total reviews** | 1,110 |
+| **Class balance** | 370 Positive · 370 Negative · 370 Neutral *(perfectly balanced)* |
+| **Columns** | `review_id`, `source`, `product_category`, `review_text`, `rating`, `label` |
+| **Split** | 80 / 20 stratified — 888 train · 222 test |
 
----
+</div>
 
-## Pipeline
-
-### 1. Preprocessing
-
-Eight sequential stages applied to every review:
-
-| Step | Operation |
-|---|---|
-| 1 | Lowercase |
-| 2 | Remove URLs (HTTP/HTTPS/www) |
-| 3 | Strip HTML tags and entities |
-| 4 | Convert emojis to text via `emoji.demojize()` |
-| 5 | Remove punctuation and digits |
-| 6 | Tokenize with NLTK `word_tokenize` |
-| 7 | Remove stopwords — **negations preserved** (`not`, `no`, `never`, `nor`, `neither`, `hardly`, `barely`, `scarcely`) |
-| 8 | Lemmatize with NLTK `WordNetLemmatizer` (verb → noun fallback) |
-
-> **Design note:** Negations are explicitly kept because flipping sentiment polarity (*"not good"* → *"good"*) would silently corrupt labels in a bag-of-words model.
-
-Output columns added to the CSV: `cleaned_text`, `tokens`, `token_count`.
+Reviews were scraped with `scrape_playstore_reviews.py` and labelled to maintain a perfectly balanced three-class distribution.
 
 ---
 
-### 2. Feature Extraction
+## ⚙️ Pipeline
 
-**TF-IDF**
+### 🧹 Step 1 — Preprocessing
+
+Eight sequential cleaning stages applied to every review:
+
+| # | Stage | Operation |
+|:---:|:---|:---|
+| 1 | **Lowercase** | Normalize all characters to lowercase |
+| 2 | **Remove URLs** | Strip HTTP/HTTPS and www links |
+| 3 | **Strip HTML** | Remove tags and entities (e.g. `&amp;`) |
+| 4 | **Emoji → Text** | Convert emojis via `emoji.demojize()` |
+| 5 | **Clean punctuation** | Remove punctuation and digits, collapse whitespace |
+| 6 | **Tokenize** | Split with NLTK `word_tokenize` |
+| 7 | **Remove stopwords** | Drop common words — **negations kept** ⚠️ |
+| 8 | **Lemmatize** | `WordNetLemmatizer` (verb → noun fallback) |
+
+> **Why keep negations?** Words like *not*, *never*, *hardly*, *barely* directly flip sentiment polarity. Removing them would silently corrupt labels in a bag-of-words model — e.g. *"not good"* becomes *"good"*.
+
+Output columns appended to the CSV: `cleaned_text` · `tokens` · `token_count`
+
+---
+
+### 🔢 Step 2 — Feature Extraction
+
+<table>
+<tr>
+<th>TF-IDF</th>
+<th>Word2Vec</th>
+</tr>
+<tr>
+<td>
+
 - Unigrams + bigrams (`ngram_range=(1,2)`)
-- 20,000 max features, sublinear TF scaling (`log(tf) + 1`), minimum document frequency of 2
-- Resulting vocabulary: **5,013 features**
+- 20,000 max features
+- Sublinear TF scaling — `log(tf) + 1`
+- Min document frequency: 2
+- **Vocabulary: 5,013 features**
 
-**Word2Vec**
-- Trained on the full corpus (no label leakage)
-- `vector_size=100`, `window=5`, `min_count=1`, `epochs=10`
-- Vocabulary: **4,046 words**
-- Document vector: mean of all in-vocabulary word vectors
+</td>
+<td>
+
+- Trained on full corpus (no label leakage)
+- `vector_size=100`, `window=5`, `min_count=1`
+- 10 training epochs
+- Document vector = mean of word vectors
+- **Vocabulary: 4,046 words**
+
+</td>
+</tr>
+</table>
 
 ---
 
-### 3. Models & Hyperparameter Tuning
+### 🤖 Step 3 — Models & Hyperparameter Tuning
 
 | Classifier | TF-IDF Search Space | Word2Vec Search Space |
-|---|---|---|
-| Logistic Regression | `C ∈ {0.1, 1, 10}` | `C ∈ {0.1, 1, 10}` |
-| Linear SVM | `C ∈ {0.1, 1, 10}` | `C ∈ {0.1, 1, 10}` |
-| Naive Bayes | `MultinomialNB α ∈ {0.1, 0.5, 1.0, 5.0}` | `GaussianNB var_smoothing ∈ {1e-9, 1e-8, 1e-7}` |
+|:---|:---|:---|
+| **Logistic Regression** | `C ∈ {0.1, 1, 10}` | `C ∈ {0.1, 1, 10}` |
+| **Linear SVM** | `C ∈ {0.1, 1, 10}` | `C ∈ {0.1, 1, 10}` |
+| **Naive Bayes** | `MultinomialNB α ∈ {0.1, 0.5, 1.0, 5.0}` | `GaussianNB var_smoothing ∈ {1e-9, 1e-8, 1e-7}` |
 
-All tuning uses 5-fold stratified cross-validation via `GridSearchCV`.
+All tuning uses **5-fold stratified cross-validation** via `GridSearchCV`.
 
 ---
 
-## Results
+## 🏆 Results
 
-All metrics are macro-averaged over the three classes.
+> All metrics are macro-averaged over the three classes.
 
 | Configuration | Accuracy | Precision | Recall | F1-macro |
-|---|---|---|---|---|
-| **NB + TF-IDF (tuned)** | **0.6306** | **0.6293** | **0.6306** | **0.6285** |
+|:---|:---:|:---:|:---:|:---:|
+| 🥇 **NB + TF-IDF (tuned)** | **0.6306** | **0.6293** | **0.6306** | **0.6285** |
 | NB + TF-IDF (baseline) | 0.6126 | 0.6172 | 0.6126 | 0.6143 |
 | LR + TF-IDF (tuned) | 0.6171 | 0.6129 | 0.6171 | 0.6098 |
 | LR + TF-IDF (baseline) | 0.5856 | 0.5823 | 0.5856 | 0.5799 |
@@ -133,64 +164,72 @@ All metrics are macro-averaged over the three classes.
 | NB + Word2Vec (tuned) | 0.3604 | 0.3593 | 0.3604 | 0.3556 |
 | NB + Word2Vec (baseline) | 0.3604 | 0.3593 | 0.3604 | 0.3556 |
 
-**Best model: Multinomial Naive Bayes + TF-IDF (tuned) — F1-macro 0.6285**
+<details>
+<summary><b>Key takeaways</b></summary>
+<br/>
 
-**Key takeaways:**
-- TF-IDF consistently outperforms Word2Vec across all three classifiers. Sparse, discrete term counts are a better fit for short bag-of-words sentiment than averaged dense embeddings on this dataset size.
-- Naive Bayes pairs especially well with TF-IDF's sparse representation; it degrades with Word2Vec's continuous features (GaussianNB).
-- The neutral class is the hardest to classify — reviews with mixed sentiment and mid-range ratings frequently cross the positive/neutral boundary.
+- **TF-IDF beats Word2Vec** across all classifiers. Sparse, discrete term counts suit short reviews better than averaged dense embeddings at this dataset size.
+- **Naive Bayes thrives with TF-IDF's** sparse representation but degrades with Word2Vec's continuous features (GaussianNB).
+- **Neutral is the hardest class** — mixed-sentiment reviews with mid-range ratings (3–4 stars) frequently cross the positive/neutral boundary.
+- **Common failure modes:** sarcasm, rating–label mismatch, and out-of-vocabulary words producing zero Word2Vec vectors.
 
-**Most predictive features (NB + TF-IDF):**
+</details>
 
-| Class | Top features |
-|---|---|
-| Positive | best, graphic, fun, love, mobile, amaze, character, world, great, excite |
-| Negative | not, worst, worse, face, win, bot, money, lose, spend, trash, frustrate |
-| Neutral | annoy, thing, time, something, need, sometimes, crash, connection, app, ad |
+<details>
+<summary><b>Most predictive features — NB + TF-IDF</b></summary>
+<br/>
 
----
+| Sentiment | Top keywords |
+|:---:|:---|
+| 🟢 Positive | `best` · `graphic` · `fun` · `love` · `mobile` · `amaze` · `character` · `world` · `great` · `excite` |
+| 🔴 Negative | `not` · `worst` · `worse` · `face` · `win` · `bot` · `money` · `lose` · `spend` · `trash` · `frustrate` |
+| 🟡 Neutral | `annoy` · `thing` · `time` · `something` · `need` · `sometimes` · `crash` · `connection` · `app` · `ad` |
 
-## Interactive App
-
-`app.py` is a Streamlit application with three tabs:
-
-| Tab | Functionality |
-|---|---|
-| **Dataset** | Load CSV, run preprocessing, view class distribution and dataset statistics |
-| **Train Models** | Select feature type and classifier, toggle hyperparameter tuning, view confusion matrices, classification reports, and misclassified examples |
-| **Predict** | Enter any review text, pick a trained model, get a sentiment prediction with class probabilities |
-
-The UI auto-detects light/dark mode and uses theme-aware styling.
+</details>
 
 ---
 
-## Installation
+## 🖥️ Interactive App
+
+`app.py` is a Streamlit application with three tabs — load your data, train models, and predict in real time, all in the browser.
+
+| Tab | What you can do |
+|:---|:---|
+| **📂 Dataset** | Load the CSV, run the full preprocessing pipeline, explore class distribution and dataset statistics |
+| **🧠 Train Models** | Choose a feature type and classifier, toggle hyperparameter tuning, compare confusion matrices, classification reports, and misclassified examples |
+| **🔮 Predict** | Type any review, select a trained model, get a sentiment label with confidence scores |
+
+The UI auto-detects **light / dark mode** and applies theme-aware styling throughout.
+
+---
+
+## 🚀 Installation
 
 ```bash
-# Clone the repository
+# 1. Clone the repo
 git clone https://github.com/Adnan-Shanbour/game-review-sentiment.git
 cd game-review-sentiment
 
-# Install dependencies
+# 2. Install dependencies
 pip install streamlit pandas numpy scikit-learn gensim nltk emoji matplotlib seaborn
 
-# Download required NLTK data (run once)
+# 3. Download NLTK data (one-time)
 python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('omw-1.4')"
 ```
 
-> Python 3.9+ recommended.
+> Requires **Python 3.9+**
 
 ---
 
-## Usage
+## 🧭 Usage
 
 There are two ways to explore this project — pick whichever fits your workflow:
 
 ---
 
-### Option A — Streamlit GUI (recommended for a quick overview)
+### 🖥️ Option A — Streamlit GUI *(recommended for a quick overview)*
 
-Run the app and do everything through the browser interface: load the dataset, preprocess, train models, compare results, and predict on custom text — all in one place.
+Run the app and do everything through the browser: load the dataset, preprocess, train, compare models, and predict on custom text — all in one place.
 
 ```bash
 streamlit run app.py
@@ -198,24 +237,27 @@ streamlit run app.py
 
 ---
 
-### Option B — Notebooks (recommended for step-by-step inspection)
+### 📓 Option B — Notebooks *(recommended for step-by-step inspection)*
 
-Run the notebooks in order to see every stage in detail — intermediate outputs, plots, and metrics are displayed inline as each cell executes.
+Run the notebooks in order to walk through every stage in detail. Intermediate outputs, plots, and metrics are displayed inline as each cell executes.
 
-1. `preprocessing.ipynb` — Cleans `reviews_dataset.csv` → produces `reviews_preprocessed.csv`
-2. `sentiment_analysis.ipynb` — Trains and evaluates all 12 model configurations, baseline and tuned
-3. `sentiment_analysis_with_bert.ipynb` — BERT-based extension (optional)
+```
+1. preprocessing.ipynb              →  cleans raw CSV, outputs reviews_preprocessed.csv
+2. sentiment_analysis.ipynb         →  trains all 12 configurations, baseline + tuned
+3. sentiment_analysis_with_bert.ipynb  →  BERT-based extension (optional)
+```
 
 ---
 
-**Scrape new reviews:**
+### 🕷️ Scrape new reviews
+
 ```bash
 python scrape_playstore_reviews.py
 ```
 
 ---
 
-## Acknowledgements
+## 🎓 Acknowledgements
 
 Built as the course project for **CSAI 452 – Natural Language Processing**.  
 Dataset collected from the Google Play Store.
