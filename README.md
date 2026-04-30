@@ -184,15 +184,29 @@ python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk
 
 ## Usage
 
-**Run the interactive app:**
+There are two ways to explore this project — pick whichever fits your workflow:
+
+---
+
+### Option A — Streamlit GUI (recommended for a quick overview)
+
+Run the app and do everything through the browser interface: load the dataset, preprocess, train models, compare results, and predict on custom text — all in one place.
+
 ```bash
 streamlit run app.py
 ```
 
-**Run notebooks in order:**
+---
+
+### Option B — Notebooks (recommended for step-by-step inspection)
+
+Run the notebooks in order to see every stage in detail — intermediate outputs, plots, and metrics are displayed inline as each cell executes.
+
 1. `preprocessing.ipynb` — Cleans `reviews_dataset.csv` → produces `reviews_preprocessed.csv`
-2. `sentiment_analysis.ipynb` — Trains and evaluates all model configurations
+2. `sentiment_analysis.ipynb` — Trains and evaluates all 12 model configurations, baseline and tuned
 3. `sentiment_analysis_with_bert.ipynb` — BERT-based extension (optional)
+
+---
 
 **Scrape new reviews:**
 ```bash
