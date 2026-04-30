@@ -12,15 +12,15 @@
 
 <br/>
 
-*From raw Play Store reviews to a fully interactive prediction app — end-to-end.*
+*From raw Play Store reviews to a fully interactive prediction app, end-to-end.*
 
 </div>
 
----
+<br/>
 
 ## 📌 Overview
 
-Mobile game reviews are noisy, short, and emotionally charged — making them a compelling benchmark for sentiment analysis. This project builds a complete pipeline that classifies reviews as **Positive 🟢**, **Negative 🔴**, or **Neutral 🟡** using classical ML methods.
+Mobile game reviews are noisy, short, and emotionally charged, making them a compelling benchmark for sentiment analysis. This project builds a complete pipeline that classifies reviews as **Positive 🟢**, **Negative 🔴**, or **Neutral 🟡** using classical ML methods.
 
 <div align="center">
 
@@ -38,7 +38,7 @@ Mobile game reviews are noisy, short, and emotionally charged — making them a 
 - Baseline vs. GridSearchCV tuning across all combinations
 - Interactive **Streamlit app** for training, evaluation, and live prediction
 
----
+<br/>
 
 ## 📁 Project Structure
 
@@ -59,7 +59,7 @@ project/
 └── 📊  reviews_preprocessed.csv           # Cleaned dataset (pipeline output)
 ```
 
----
+<br/>
 
 ## 📊 Dataset
 
@@ -71,17 +71,17 @@ project/
 | **Total reviews** | 1,110 |
 | **Class balance** | 370 Positive · 370 Negative · 370 Neutral *(perfectly balanced)* |
 | **Columns** | `review_id`, `source`, `product_category`, `review_text`, `rating`, `label` |
-| **Split** | 80 / 20 stratified — 888 train · 222 test |
+| **Split** | 80 / 20 stratified: 888 train · 222 test |
 
 </div>
 
 Reviews were scraped with `scrape_playstore_reviews.py` and labelled to maintain a perfectly balanced three-class distribution.
 
----
+<br/>
 
 ## ⚙️ Pipeline
 
-### 🧹 Step 1 — Preprocessing
+### 🧹 Step 1: Preprocessing
 
 Eight sequential cleaning stages applied to every review:
 
@@ -90,19 +90,17 @@ Eight sequential cleaning stages applied to every review:
 | 1 | **Lowercase** | Normalize all characters to lowercase |
 | 2 | **Remove URLs** | Strip HTTP/HTTPS and www links |
 | 3 | **Strip HTML** | Remove tags and entities (e.g. `&amp;`) |
-| 4 | **Emoji → Text** | Convert emojis via `emoji.demojize()` |
+| 4 | **Emoji to Text** | Convert emojis via `emoji.demojize()` |
 | 5 | **Clean punctuation** | Remove punctuation and digits, collapse whitespace |
 | 6 | **Tokenize** | Split with NLTK `word_tokenize` |
-| 7 | **Remove stopwords** | Drop common words — **negations kept** ⚠️ |
-| 8 | **Lemmatize** | `WordNetLemmatizer` (verb → noun fallback) |
+| 7 | **Remove stopwords** | Drop common words, **negations kept** ⚠️ |
+| 8 | **Lemmatize** | `WordNetLemmatizer` (verb to noun fallback) |
 
-> **Why keep negations?** Words like *not*, *never*, *hardly*, *barely* directly flip sentiment polarity. Removing them would silently corrupt labels in a bag-of-words model — e.g. *"not good"* becomes *"good"*.
+> **Why keep negations?** Words like *not*, *never*, *hardly*, *barely* directly flip sentiment polarity. Removing them would silently corrupt labels in a bag-of-words model, e.g. *"not good"* becomes *"good"*.
 
 Output columns appended to the CSV: `cleaned_text` · `tokens` · `token_count`
 
----
-
-### 🔢 Step 2 — Feature Extraction
+### 🔢 Step 2: Feature Extraction
 
 <table>
 <tr>
@@ -114,7 +112,7 @@ Output columns appended to the CSV: `cleaned_text` · `tokens` · `token_count`
 
 - Unigrams + bigrams (`ngram_range=(1,2)`)
 - 20,000 max features
-- Sublinear TF scaling — `log(tf) + 1`
+- Sublinear TF scaling: `log(tf) + 1`
 - Min document frequency: 2
 - **Vocabulary: 5,013 features**
 
@@ -131,9 +129,7 @@ Output columns appended to the CSV: `cleaned_text` · `tokens` · `token_count`
 </tr>
 </table>
 
----
-
-### 🤖 Step 3 — Models & Hyperparameter Tuning
+### 🤖 Step 3: Models & Hyperparameter Tuning
 
 | Classifier | TF-IDF Search Space | Word2Vec Search Space |
 |:---|:---|:---|
@@ -143,7 +139,7 @@ Output columns appended to the CSV: `cleaned_text` · `tokens` · `token_count`
 
 All tuning uses **5-fold stratified cross-validation** via `GridSearchCV`.
 
----
+<br/>
 
 ## 🏆 Results
 
@@ -170,13 +166,13 @@ All tuning uses **5-fold stratified cross-validation** via `GridSearchCV`.
 
 - **TF-IDF beats Word2Vec** across all classifiers. Sparse, discrete term counts suit short reviews better than averaged dense embeddings at this dataset size.
 - **Naive Bayes thrives with TF-IDF's** sparse representation but degrades with Word2Vec's continuous features (GaussianNB).
-- **Neutral is the hardest class** — mixed-sentiment reviews with mid-range ratings (3–4 stars) frequently cross the positive/neutral boundary.
-- **Common failure modes:** sarcasm, rating–label mismatch, and out-of-vocabulary words producing zero Word2Vec vectors.
+- **Neutral is the hardest class:** mixed-sentiment reviews with mid-range ratings (3-4 stars) frequently cross the positive/neutral boundary.
+- **Common failure modes:** sarcasm, rating-label mismatch, and out-of-vocabulary words producing zero Word2Vec vectors.
 
 </details>
 
 <details>
-<summary><b>Most predictive features — NB + TF-IDF</b></summary>
+<summary><b>Most predictive features: NB + TF-IDF</b></summary>
 <br/>
 
 | Sentiment | Top keywords |
@@ -187,54 +183,42 @@ All tuning uses **5-fold stratified cross-validation** via `GridSearchCV`.
 
 </details>
 
----
+<br/>
 
 ## 🔍 Why Don't the Models Score Higher?
 
-63% F1-macro on a balanced 3-class problem is a meaningful result, but understanding the ceiling matters. The limitations come from several compounding factors — ranked by impact:
-
----
+63% F1-macro on a balanced 3-class problem is a meaningful result, but understanding the ceiling matters. The limitations come from several compounding factors, ranked by impact:
 
 **1. 🎯 The neutral class is inherently ambiguous** *(biggest culprit)*
 
-Drawing the line between neutral and mildly positive/negative is subjective. A review like *"graphics are great but the ads ruin it"* is simultaneously positive and negative — wherever the labeller drew that boundary, another person would draw it differently. That inconsistency is baked into the ground truth, and no model can reliably learn a boundary that isn't consistently defined.
-
----
+Drawing the line between neutral and mildly positive/negative is subjective. A review like *"graphics are great but the ads ruin it"* is simultaneously positive and negative. Wherever the labeller drew that boundary, another person would draw it differently. That inconsistency is baked into the ground truth, and no model can reliably learn a boundary that isn't consistently defined.
 
 **2. 📉 888 training samples is genuinely small for a 3-class problem**
 
-TF-IDF produced 5,013 features against only 888 training rows — more features than samples. The models don't see enough examples to reliably learn which feature combinations distinguish each class, especially near the decision boundaries.
-
----
+TF-IDF produced 5,013 features against only 888 training rows, which means more features than samples. The models don't see enough examples to reliably learn which feature combinations distinguish each class, especially near the decision boundaries.
 
 **3. 🧮 Word2Vec was trained from scratch on a tiny corpus**
 
-This explains almost entirely why Word2Vec underperforms TF-IDF so badly. Word2Vec needs millions of sentences to learn meaningful embeddings. Training it on 1,110 short reviews produces nearly random vectors — using pre-trained embeddings (GloVe, fastText) would have been a much fairer comparison and would likely close the gap significantly.
-
----
+This explains almost entirely why Word2Vec underperforms TF-IDF so badly. Word2Vec needs millions of sentences to learn meaningful embeddings. Training it on 1,110 short reviews produces nearly random vectors. Using pre-trained embeddings (GloVe, fastText) would have been a much fairer comparison and would likely close the gap significantly.
 
 **4. 📝 Short review length contributes at the margins**
 
-Short texts create sparse TF-IDF vectors and unreliable Word2Vec averages, making individual predictions noisier. That said, TF-IDF still reached 63%, so the signal is present — length makes the problem harder but isn't the root cause.
-
----
+Short texts create sparse TF-IDF vectors and unreliable Word2Vec averages, making individual predictions noisier. That said, TF-IDF still reached 63%, so the signal is there. Length makes the problem harder but isn't the root cause.
 
 **5. 🧠 Classical bag-of-words models can't capture context or sarcasm**
 
 *"Oh great, another pay-to-win update"* — a TF-IDF model sees `great` and leans positive. Without word order or contextual understanding, these cases are unrecoverable with classical ML. BERT and similar models handle this because they read the full sentence as a unit rather than a bag of independent tokens.
 
----
-
 > **Highest-leverage improvements:**
-> - Use a pre-trained contextual model *(BERT notebook already included)* — addresses points 3, 4, and 5 at once
+> - Use a pre-trained contextual model *(BERT notebook already included)*, which addresses points 3, 4, and 5 at once
 > - Collect more labelled data, especially for the neutral class
-> - Consider collapsing to binary classification (positive vs. negative) — removing the ambiguous neutral class would likely push accuracy above 80%
+> - Consider collapsing to binary classification (positive vs. negative): removing the ambiguous neutral class would likely push accuracy above 80%
 
----
+<br/>
 
 ## 🖥️ Interactive App
 
-`app.py` is a Streamlit application with three tabs — load your data, train models, and predict in real time, all in the browser.
+`app.py` is a Streamlit application with three tabs: load your data, train models, and predict in real time, all in the browser.
 
 | Tab | What you can do |
 |:---|:---|
@@ -244,7 +228,7 @@ Short texts create sparse TF-IDF vectors and unreliable Word2Vec averages, makin
 
 The UI auto-detects **light / dark mode** and applies theme-aware styling throughout.
 
----
+<br/>
 
 ## 🚀 Installation
 
@@ -262,35 +246,29 @@ python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk
 
 > Requires **Python 3.9+**
 
----
+<br/>
 
 ## 🧭 Usage
 
-There are two ways to explore this project — pick whichever fits your workflow:
+There are two ways to explore this project, pick whichever fits your workflow:
 
----
+### 🖥️ Option A: Streamlit GUI *(recommended for a quick overview)*
 
-### 🖥️ Option A — Streamlit GUI *(recommended for a quick overview)*
-
-Run the app and do everything through the browser: load the dataset, preprocess, train, compare models, and predict on custom text — all in one place.
+Run the app and do everything through the browser: load the dataset, preprocess, train, compare models, and predict on custom text, all in one place.
 
 ```bash
 streamlit run app.py
 ```
 
----
-
-### 📓 Option B — Notebooks *(recommended for step-by-step inspection)*
+### 📓 Option B: Notebooks *(recommended for step-by-step inspection)*
 
 Run the notebooks in order to walk through every stage in detail. Intermediate outputs, plots, and metrics are displayed inline as each cell executes.
 
 ```
-1. preprocessing.ipynb              →  cleans raw CSV, outputs reviews_preprocessed.csv
-2. sentiment_analysis.ipynb         →  trains all 12 configurations, baseline + tuned
-3. sentiment_analysis_with_bert.ipynb  →  BERT-based extension (optional)
+1. preprocessing.ipynb                 cleans raw CSV, outputs reviews_preprocessed.csv
+2. sentiment_analysis.ipynb            trains all 12 configurations, baseline + tuned
+3. sentiment_analysis_with_bert.ipynb  BERT-based extension (optional)
 ```
-
----
 
 ### 🕷️ Scrape new reviews
 
@@ -298,7 +276,7 @@ Run the notebooks in order to walk through every stage in detail. Intermediate o
 python scrape_playstore_reviews.py
 ```
 
----
+<br/>
 
 ## 🎓 Acknowledgements
 
